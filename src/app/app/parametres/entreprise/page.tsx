@@ -1,8 +1,10 @@
 import { requireUser } from "@/lib/auth";
 import { query } from "@/lib/db";
-import { formatMoney, formatPhone } from "@/lib/format";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { LegalNotice } from "@/components/LegalNotice";
+import { FormField, FormTextarea } from "@/components/forms/FormField";
+import { SubmitButton } from "@/components/forms/SubmitButton";
+import { updateCompanySettingsAction } from "@/lib/actions/company-actions";
 
 type Company = {
   nom_commercial: string;
@@ -12,8 +14,10 @@ type Company = {
   siret: string;
   numero_tva: string | null;
   adresse_ligne1: string;
+  adresse_ligne2: string | null;
   code_postal: string;
   ville: string;
+  pays: string;
   telephone: string;
   email: string;
   taux_penalites_retard: string;
@@ -26,38 +30,48 @@ export default async function CompanySettingsPage() {
   const user = await requireUser();
   const result = await query<Company>("SELECT * FROM entreprises WHERE id = $1", [user.entreprise_id]);
   const company = result.rows[0];
+  const capitalSocial = ((company.capital_social_cents ?? 0) / 100).toFixed(2);
+  const indemniteRecouvrement = (company.indemnite_recouvrement_cents / 100).toFixed(2);
 
   return (
     <>
       <PageHeader title="Parametres entreprise" description="Informations legales reprises sur les devis et factures." />
-      <div className="grid gap-5 lg:grid-cols-[1fr_360px]">
+      <form action={updateCompanySettingsAction} className="grid gap-5 lg:grid-cols-[1fr_360px]">
         <section className="panel p-5">
           <h2 className="text-xl font-bold text-slate-950">Identite legale</h2>
-          <dl className="mt-4 grid gap-4 sm:grid-cols-2">
-            <div><dt className="font-semibold text-slate-700">Nom commercial</dt><dd>{company.nom_commercial}</dd></div>
-            <div><dt className="font-semibold text-slate-700">Raison sociale</dt><dd>{company.raison_sociale}</dd></div>
-            <div><dt className="font-semibold text-slate-700">Forme juridique</dt><dd>{company.forme_juridique}</dd></div>
-            <div><dt className="font-semibold text-slate-700">Capital social</dt><dd>{formatMoney(company.capital_social_cents ?? 0)}</dd></div>
-            <div><dt className="font-semibold text-slate-700">SIRET</dt><dd>{company.siret}</dd></div>
-            <div><dt className="font-semibold text-slate-700">TVA</dt><dd>{company.numero_tva ?? "-"}</dd></div>
-            <div className="sm:col-span-2"><dt className="font-semibold text-slate-700">Adresse</dt><dd>{company.adresse_ligne1}, {company.code_postal} {company.ville}</dd></div>
-            <div><dt className="font-semibold text-slate-700">Telephone</dt><dd>{formatPhone(company.telephone)}</dd></div>
-            <div><dt className="font-semibold text-slate-700">Email</dt><dd>{company.email}</dd></div>
-          </dl>
+          <div className="mt-4 grid gap-4 sm:grid-cols-2">
+            <FormField label="Nom commercial" name="nom_commercial" defaultValue={company.nom_commercial} required />
+            <FormField label="Raison sociale" name="raison_sociale" defaultValue={company.raison_sociale} required />
+            <FormField label="Forme juridique" name="forme_juridique" defaultValue={company.forme_juridique} required />
+            <FormField label="Capital social (€)" name="capital_social" inputMode="decimal" defaultValue={capitalSocial} />
+            <FormField label="SIREN" name="siren" defaultValue={company.siret.slice(0, 9)} required />
+            <FormField label="SIRET" name="siret" defaultValue={company.siret} required />
+            <FormField label="TVA intracommunautaire" name="numero_tva" defaultValue={company.numero_tva ?? ""} />
+            <FormField label="Telephone" name="telephone" type="tel" defaultValue={company.telephone} required />
+            <FormField label="Email" name="email" type="email" defaultValue={company.email} required />
+            <FormField label="Adresse" name="adresse_ligne1" defaultValue={company.adresse_ligne1} required />
+            <FormField label="Complement d'adresse" name="adresse_ligne2" defaultValue={company.adresse_ligne2 ?? ""} />
+            <FormField label="Code postal" name="code_postal" defaultValue={company.code_postal} required />
+            <FormField label="Ville" name="ville" defaultValue={company.ville} required />
+            <FormField label="Pays" name="pays" defaultValue={company.pays} required />
+          </div>
         </section>
         <aside className="grid gap-5">
           <section className="panel p-5">
             <h2 className="text-lg font-bold text-slate-950">Paiement</h2>
-            <dl className="mt-4 grid gap-3 text-sm">
-              <div><dt className="font-semibold text-slate-700">Delai</dt><dd>{company.delai_paiement_jours} jours</dd></div>
-              <div><dt className="font-semibold text-slate-700">Penalites</dt><dd>{company.taux_penalites_retard} %</dd></div>
-              <div><dt className="font-semibold text-slate-700">Indemnite recouvrement</dt><dd>{formatMoney(company.indemnite_recouvrement_cents)}</dd></div>
-              <div><dt className="font-semibold text-slate-700">Escompte</dt><dd>{company.conditions_escompte}</dd></div>
-            </dl>
+            <div className="mt-4 grid gap-4">
+              <FormField label="Delai de paiement (jours)" name="delai_paiement_jours" type="number" min={1} defaultValue={company.delai_paiement_jours} required />
+              <FormField label="Penalites de retard (%)" name="taux_penalites_retard" inputMode="decimal" defaultValue={company.taux_penalites_retard} required />
+              <FormField label="Indemnite de recouvrement (€)" name="indemnite_recouvrement" inputMode="decimal" defaultValue={indemniteRecouvrement} required />
+              <FormTextarea label="Escompte" name="conditions_escompte" defaultValue={company.conditions_escompte} rows={3} required />
+            </div>
           </section>
           <LegalNotice />
+          <section className="panel p-5">
+            <SubmitButton label="Enregistrer les parametres" />
+          </section>
         </aside>
-      </div>
+      </form>
     </>
   );
 }
