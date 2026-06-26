@@ -1,0 +1,4 @@
+run = "pnpm dev"
+
+[deployment]
+run = ["sh", "-c", "pnpm build && pnpm start"]
