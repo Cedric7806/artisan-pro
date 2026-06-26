@@ -2,9 +2,37 @@ import { requireUser } from "@/lib/auth";
 import { query } from "@/lib/db";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { LegalNotice } from "@/components/LegalNotice";
-import { FormField, FormTextarea } from "@/components/forms/FormField";
+import { FormField, FormSelect, FormTextarea } from "@/components/forms/FormField";
 import { SubmitButton } from "@/components/forms/SubmitButton";
 import { updateCompanySettingsAction } from "@/lib/actions/company-actions";
+
+const legalForms = [
+  "Micro-entreprise",
+  "Entreprise individuelle",
+  "EIRL",
+  "EURL",
+  "SARL",
+  "SASU",
+  "SAS",
+  "SA",
+  "SNC",
+  "SCS",
+  "SCA",
+  "SCI",
+  "SCP",
+  "SCM",
+  "SELARL",
+  "SELAS",
+  "SELAFA",
+  "SELCA",
+  "SCOP",
+  "SCIC",
+  "Association loi 1901",
+  "GIE",
+  "GAEC",
+  "EARL",
+  "Autre"
+];
 
 type Company = {
   nom_commercial: string;
@@ -20,6 +48,7 @@ type Company = {
   pays: string;
   telephone: string;
   email: string;
+  regime_tva: string;
   taux_penalites_retard: string;
   indemnite_recouvrement_cents: number;
   delai_paiement_jours: number;
@@ -42,10 +71,19 @@ export default async function CompanySettingsPage() {
           <div className="mt-4 grid gap-4 sm:grid-cols-2">
             <FormField label="Nom commercial" name="nom_commercial" defaultValue={company.nom_commercial} required />
             <FormField label="Raison sociale" name="raison_sociale" defaultValue={company.raison_sociale} required />
-            <FormField label="Forme juridique" name="forme_juridique" defaultValue={company.forme_juridique} required />
+            <FormSelect label="Forme juridique" name="forme_juridique" defaultValue={company.forme_juridique} required>
+              {legalForms.map((form) => (
+                <option key={form} value={form}>{form}</option>
+              ))}
+            </FormSelect>
             <FormField label="Capital social (€)" name="capital_social" inputMode="decimal" defaultValue={capitalSocial} />
             <FormField label="SIREN" name="siren" defaultValue={company.siret.slice(0, 9)} required />
             <FormField label="SIRET" name="siret" defaultValue={company.siret} required />
+            <FormSelect label="Regime TVA" name="regime_tva" defaultValue={company.regime_tva} required>
+              <option value="reel">Assujetti TVA</option>
+              <option value="franchise_base">Franchise en base de TVA</option>
+              <option value="exonere">Exonere de TVA</option>
+            </FormSelect>
             <FormField label="TVA intracommunautaire" name="numero_tva" defaultValue={company.numero_tva ?? ""} />
             <FormField label="Telephone" name="telephone" type="tel" defaultValue={company.telephone} required />
             <FormField label="Email" name="email" type="email" defaultValue={company.email} required />

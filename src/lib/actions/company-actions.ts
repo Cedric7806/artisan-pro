@@ -8,6 +8,12 @@ function value(formData: FormData, key: string) {
   return String(formData.get(key) ?? "").trim();
 }
 
+function required(formData: FormData, key: string) {
+  const fieldValue = value(formData, key);
+  if (!fieldValue) throw new Error(`Champ obligatoire: ${key}`);
+  return fieldValue;
+}
+
 function cents(valueText: string) {
   const normalized = valueText.replace(/\s/g, "").replace(",", ".");
   const amount = Number(normalized);
@@ -21,8 +27,13 @@ function positiveInteger(valueText: string, fallback: number) {
 
 export async function updateCompanySettingsAction(formData: FormData) {
   const user = await requireUser();
-  const siret = value(formData, "siret");
-  const siren = value(formData, "siren") || siret.slice(0, 9);
+  const siret = required(formData, "siret");
+  const siren = required(formData, "siren");
+  const regimeTva = required(formData, "regime_tva");
+  const vatNumber = value(formData, "numero_tva");
+  if (regimeTva === "reel" && !vatNumber) {
+    throw new Error("Le numero de TVA est obligatoire pour une entreprise assujettie a la TVA.");
+  }
 
   await query(
     `UPDATE entreprises SET
@@ -32,38 +43,40 @@ export async function updateCompanySettingsAction(formData: FormData) {
       capital_social_cents = $4,
       siren = $5,
       siret = $6,
-      numero_tva = $7,
-      adresse_ligne1 = $8,
-      adresse_ligne2 = $9,
-      code_postal = $10,
-      ville = $11,
-      pays = $12,
-      telephone = $13,
-      email = $14,
-      taux_penalites_retard = $15,
-      indemnite_recouvrement_cents = $16,
-      delai_paiement_jours = $17,
-      conditions_escompte = $18
-    WHERE id = $19`,
+      adresse_ligne1 = $7,
+      adresse_ligne2 = $8,
+      code_postal = $9,
+      ville = $10,
+      pays = $11,
+      telephone = $12,
+      email = $13,
+      regime_tva = $14,
+      numero_tva = $15,
+      taux_penalites_retard = $16,
+      indemnite_recouvrement_cents = $17,
+      delai_paiement_jours = $18,
+      conditions_escompte = $19
+    WHERE id = $20`,
     [
-      value(formData, "nom_commercial"),
-      value(formData, "raison_sociale"),
-      value(formData, "forme_juridique"),
+      required(formData, "nom_commercial"),
+      required(formData, "raison_sociale"),
+      required(formData, "forme_juridique"),
       cents(value(formData, "capital_social")),
       siren,
       siret,
-      value(formData, "numero_tva") || null,
-      value(formData, "adresse_ligne1"),
+      required(formData, "adresse_ligne1"),
       value(formData, "adresse_ligne2") || null,
-      value(formData, "code_postal"),
-      value(formData, "ville"),
+      required(formData, "code_postal"),
+      required(formData, "ville"),
       value(formData, "pays") || "France",
-      value(formData, "telephone"),
-      value(formData, "email"),
-      value(formData, "taux_penalites_retard").replace(",", ".") || "0",
-      cents(value(formData, "indemnite_recouvrement")),
+      required(formData, "telephone"),
+      required(formData, "email"),
+      regimeTva,
+      vatNumber || null,
+      required(formData, "taux_penalites_retard").replace(",", "."),
+      cents(required(formData, "indemnite_recouvrement")),
       positiveInteger(value(formData, "delai_paiement_jours"), 30),
-      value(formData, "conditions_escompte") || "Aucun escompte pour paiement anticipe",
+      required(formData, "conditions_escompte"),
       user.entreprise_id
     ]
   );
