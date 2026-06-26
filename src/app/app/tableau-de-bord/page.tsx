@@ -49,9 +49,9 @@ export default async function DashboardPage() {
     <>
       <PageHeader title="Tableau de bord" description="Les chiffres utiles pour commencer la journee." actionHref="/app/interventions/nouvelle" actionLabel="Nouvelle intervention" actionIcon={Plus} />
       <div className="grid gap-4 md:grid-cols-3">
-        <StatCard label="CA du mois" value={formatMoney(s.ca_mois)} helper="Factures emises et payees" icon={Euro} />
-        <StatCard label="Interventions actives" value={String(s.interventions_en_cours)} helper="Planifiees ou en cours" icon={CalendarCheck} />
-        <StatCard label="Devis a suivre" value={String(s.devis_en_attente)} helper="Brouillons et envoyes" icon={FileClock} />
+        <StatCard label="CA du mois" value={formatMoney(s.ca_mois)} helper="Factures emises et payees" icon={Euro} tone="money" metric="Encaissement mensuel" />
+        <StatCard label="Interventions actives" value={String(s.interventions_en_cours)} helper="Planifiees ou en cours" icon={CalendarCheck} tone="work" metric="Charge terrain" />
+        <StatCard label="Devis a suivre" value={String(s.devis_en_attente)} helper="Brouillons et envoyes" icon={FileClock} tone="quote" metric="Relances commerciales" />
       </div>
 
       <section className="mt-6 panel">

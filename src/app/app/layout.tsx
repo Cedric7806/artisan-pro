@@ -7,9 +7,9 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   if (!user) redirect("/auth/connexion");
 
   return (
-    <div className="min-h-screen bg-paper md:grid md:grid-cols-[minmax(0,1fr)_18rem]">
+    <div className="min-h-screen bg-paper md:grid md:grid-cols-[18rem_minmax(0,1fr)]">
       <AppNav user={user} />
-      <main className="container-page md:order-1">{children}</main>
+      <main className="container-page">{children}</main>
     </div>
   );
 }

@@ -21,7 +21,7 @@ async function logoutAction() {
 
 export function AppNav({ user }: { user: UserSession }) {
   return (
-    <aside className="border-b border-line bg-white md:sticky md:top-0 md:order-2 md:flex md:h-screen md:w-72 md:flex-col md:border-b-0 md:border-l">
+    <aside className="border-b border-line bg-white md:sticky md:top-0 md:flex md:h-screen md:w-72 md:flex-col md:border-b-0 md:border-r">
       <div className="flex h-full flex-col gap-5 px-4 py-4 sm:px-6 md:px-5">
         <Link href="/app/tableau-de-bord" className="flex items-center gap-3">
           <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-brand-700 text-lg font-bold text-white">AP</span>
