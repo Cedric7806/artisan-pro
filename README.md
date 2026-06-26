@@ -8,7 +8,7 @@ MVP SaaS de gestion d'activité pour artisans et PME de services à domicile en 
 - pnpm
 - PostgreSQL 16+
 
-Le projet n'est pas lié à Replit. Il peut tourner en local, sur un VPS, ou chez un hébergeur Node/Docker classique.
+Il peut tourner en local, sur un VPS, ou chez un hébergeur Node/Docker classique.
 
 ## Démarrage local
 
